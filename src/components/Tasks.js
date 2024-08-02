@@ -41,8 +41,9 @@ function CreateTask({ onSetTask }) {
   function handleSubmit(e) {
     e.preventDefault();
     if (taskName === "") return;
-    const newTask = { id: crypto.randomUUID(), taskName };
+    const newTask = { id: Date.now(), taskName };
     onSetTask(newTask);
+    setTaskName("");
   }
   return (
     <Form btnName="Add Task" onSubmit={handleSubmit} formName="Create new task">
@@ -66,21 +67,21 @@ function DisplayTaskList({ taskList, onDeleteTask, onCheckTask }) {
           <li className="displayListItem" key={task.id}>
             <input
               type="checkbox"
+              style={{ width: "10%" }}
               value={task.taskStatus}
               onChange={() => onCheckTask(task.id)}
-              style={{ height: "25px", width: "20%", display: "inline" }}
             />
-            <h4
+            <p
+              className="task-text"
               style={task.taskStatus ? { textDecoration: "line-through" } : {}}
             >
               {task.taskName}
-            </h4>{" "}
+            </p>
             <Button
-              addonClass="btn-small btn-alone"
-              value={task.id}
-              onClick={onDeleteTask}
+              addonClass="btn-small btn-alone btn-task"
+              onClick={() => onDeleteTask(task.id)}
             >
-              Delete Task
+              X
             </Button>
           </li>
         ))}

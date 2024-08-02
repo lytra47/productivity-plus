@@ -41,8 +41,10 @@ function CreateNote({ onAddNote }) {
   function handleSubmit(e) {
     e.preventDefault();
     if (heading === "" || note === "") return;
-    const newNote = { id: crypto.randomUUID(), heading, note };
+    const newNote = { id: Date.now(), heading, note };
     onAddNote(newNote);
+    setHeading("");
+    setNote("");
   }
   return (
     <Form formName="Add new note" btnName="Add note" onSubmit={handleSubmit}>
@@ -72,8 +74,7 @@ function DisplayNotes({ notesList, onDeleteNote }) {
             <h4>{note.heading}</h4>
             <p>{note.note}</p>
             <Button
-              value={note.id}
-              onClick={onDeleteNote}
+              onClick={() => onDeleteNote(note.id)}
               addonClass="btn-alone"
             >
               X

@@ -6,7 +6,8 @@ const initialCards = [
   {
     id: 1,
     question: "What's this?",
-    answer: "This",
+    answer:
+      "Oppo is preparing the flagship Find X8 family, comprising of the vanilla X8, the X8 Pro, and the X8 Ultra, and today the battery capacities.comprising of the vanilla X8, the X8 Pro, and the X",
   },
   { id: 2, question: "Do that now!", answer: "That" },
   {
@@ -41,11 +42,13 @@ function CreateFlashCard({ onAddCard }) {
     e.preventDefault();
     if (answer === "" || question === "") return;
     const newCard = {
-      id: crypto.randomUUID(),
+      id: Date.now(),
       question,
       answer,
     };
     onAddCard(newCard);
+    setQuestion("");
+    setAnswer("");
   }
   return (
     <Form
@@ -72,7 +75,6 @@ function CreateFlashCard({ onAddCard }) {
 
 function DisplayCardList({ cardList, onDeleteCard }) {
   const [selected, setSelected] = useState(null);
-  const cardStyle = { textAlign: "center" };
 
   function handleSelection(id) {
     setSelected((cur) => (cur === id ? null : id));
@@ -85,20 +87,27 @@ function DisplayCardList({ cardList, onDeleteCard }) {
           <li
             onClick={() => handleSelection(card.id)}
             key={card.id}
-            className="displayListItem"
+            className="display-flash-cards"
           >
             {selected === card.id ? (
-              <p style={cardStyle}>{card.answer}</p>
+              <>
+                <p className="card-answer">{card.answer}</p>
+                <div className="card-back-options">
+                  <Button addonClass="btn-card-delete" position="btn-left">
+                    Edit
+                  </Button>
+                  <Button
+                    addonClass="btn-card-delete"
+                    position="btn-right"
+                    onClick={() => onDeleteCard(card.id)}
+                  >
+                    delete
+                  </Button>
+                </div>
+              </>
             ) : (
-              <h4 style={cardStyle}>{card.question}</h4>
+              <h4 className="card-front">{card.question}</h4>
             )}
-            <Button
-              value={card.id}
-              onClick={onDeleteCard}
-              addonClass="btn-alone"
-            >
-              X
-            </Button>
           </li>
         ))}
       </ul>
