@@ -28,13 +28,13 @@ export default function FlashCards() {
   }
   return (
     <div className="container">
-      <CreateFlashCard onAddCard={handleAddCard} />
+      <CreateFlashCard cardList={cardList} onAddCard={handleAddCard} />
       <DisplayCardList cardList={cardList} onDeleteCard={handleDeleteCard} />
     </div>
   );
 }
 
-function CreateFlashCard({ onAddCard }) {
+function CreateFlashCard({ cardList, onAddCard }) {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
 
@@ -42,7 +42,7 @@ function CreateFlashCard({ onAddCard }) {
     e.preventDefault();
     if (answer === "" || question === "") return;
     const newCard = {
-      id: Date.now(),
+      id: cardList.length + 1,
       question,
       answer,
     };

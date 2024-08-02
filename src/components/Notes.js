@@ -28,20 +28,20 @@ export default function Notes() {
 
   return (
     <div className="container">
-      <CreateNote onAddNote={handleAddNote} />
+      <CreateNote notesList={notesList} onAddNote={handleAddNote} />
       <DisplayNotes notesList={notesList} onDeleteNote={handleDeleteNote} />
     </div>
   );
 }
 
-function CreateNote({ onAddNote }) {
+function CreateNote({ notesList, onAddNote }) {
   const [heading, setHeading] = useState("");
   const [note, setNote] = useState("");
 
   function handleSubmit(e) {
     e.preventDefault();
     if (heading === "" || note === "") return;
-    const newNote = { id: Date.now(), heading, note };
+    const newNote = { id: notesList.length + 1, heading, note };
     onAddNote(newNote);
     setHeading("");
     setNote("");
@@ -70,15 +70,25 @@ function DisplayNotes({ notesList, onDeleteNote }) {
       <h3>Notes</h3>
       <ul>
         {notesList.map((note) => (
-          <li className="displayListItem" key={note.id}>
+          <li className="display-notes" key={note.id}>
             <h4>{note.heading}</h4>
-            <p>{note.note}</p>
-            <Button
-              onClick={() => onDeleteNote(note.id)}
-              addonClass="btn-alone"
-            >
-              X
-            </Button>
+            <hr />
+            <div className="note-block">
+              <p>{note.note}</p>
+            </div>
+
+            <div className="card-back-options">
+              <Button addonClass="btn-card-delete" position="btn-left">
+                Edit
+              </Button>
+              <Button
+                addonClass="btn-card-delete"
+                position="btn-right"
+                onClick={() => onDeleteNote(note.id)}
+              >
+                delete
+              </Button>
+            </div>
           </li>
         ))}
       </ul>

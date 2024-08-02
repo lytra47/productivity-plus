@@ -6,7 +6,7 @@ import FlashCards from "./components/FlashCards";
 import Notes from "./components/Notes";
 
 export default function App() {
-  const [currentPage, setCurrentPage] = useState("tasks");
+  const [currentPage, setCurrentPage] = useState("notes");
   function handleSetPage(pageId) {
     setCurrentPage(pageId);
   }

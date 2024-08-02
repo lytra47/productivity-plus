@@ -104,7 +104,7 @@ ul {
 }
 .btn-task {
   height: 25px;
-  width: 10%;
+  width: 7%;
   padding: 0;
 }
 .btn-card-delete {
@@ -144,7 +144,9 @@ input {
 
 .card-answer {
   text-align: center;
+  height: 160px;
   padding: 1rem;
+  overflow: auto;
 }
 
 .displayListItem {
@@ -167,16 +169,42 @@ input {
   margin-bottom: 1rem;
   position: relative;
 }
+.display-notes {
+  width: 100%;
+  height: 200px;
+
+  background-color: var(--accent);
+  margin: 1px;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  position: relative;
+}
+.display-notes .note-block {
+  overflow: auto;
+  padding: 0.4rem 1rem;
+  height: 130px;
+}
+.display-notes h4 {
+  text-align: center;
+  padding: 0.5rem 1rem;
+}
+.display-notes hr {
+  border: solid #d6d9d9 1px;
+  width: 95%;
+  margin: auto;
+}
+.display-notes p {
+  text-align: center;
+}
 .task-text {
   margin-left: 5px;
 }
 
-@media (min-width: 500px) {
+@media (min-width: 540px) {
   .logo {
     font-size: 2rem;
   }
   .button {
     font-size: 1rem;
-    padding: 0.7rem 2rem;
   }
 }

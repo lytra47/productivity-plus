@@ -25,7 +25,7 @@ export default function Tasks() {
   }
   return (
     <div className="container">
-      <CreateTask onSetTask={handleSetTask} />
+      <CreateTask onSetTask={handleSetTask} taskList={taskList} />
       <DisplayTaskList
         taskList={taskList}
         onDeleteTask={handleDeleteTask}
@@ -35,13 +35,14 @@ export default function Tasks() {
   );
 }
 
-function CreateTask({ onSetTask }) {
+function CreateTask({ taskList, onSetTask }) {
   const [taskName, setTaskName] = useState("");
 
   function handleSubmit(e) {
     e.preventDefault();
     if (taskName === "") return;
-    const newTask = { id: Date.now(), taskName };
+    const newTask = { id: taskList.length + 1, taskName };
+
     onSetTask(newTask);
     setTaskName("");
   }
@@ -78,10 +79,16 @@ function DisplayTaskList({ taskList, onDeleteTask, onCheckTask }) {
               {task.taskName}
             </p>
             <Button
-              addonClass="btn-small btn-alone btn-task"
+              addonClass="btn-small btn-left btn-task"
               onClick={() => onDeleteTask(task.id)}
             >
-              X
+              ↻
+            </Button>
+            <Button
+              addonClass="btn-small btn-right btn-task"
+              onClick={() => onDeleteTask(task.id)}
+            >
+              ×
             </Button>
           </li>
         ))}
