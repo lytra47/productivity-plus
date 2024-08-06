@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Form from "./Form";
 import Button from "./Button";
 
@@ -19,22 +19,48 @@ const initialCards = [
 
 export default function FlashCards() {
   const [cardList, setCardList] = useState(initialCards);
+  const [editSelect, setEditSelect] = useState(null);
 
   function handleAddCard(newCard) {
     setCardList((currCards) => [...currCards, newCard]);
   }
   function handleDeleteCard(id) {
+    handleCancelEdit();
     setCardList((currCards) => currCards.filter((card) => card.id !== id));
+  }
+  function handleUpdateCard(updatedCard) {
+    setCardList((currList) =>
+      currList.map((card) => (card.id === updatedCard.id ? updatedCard : card))
+    );
+  }
+  function handleSetEditTask(id) {
+    setEditSelect(id);
+  }
+  function handleCancelEdit() {
+    setEditSelect(null);
   }
   return (
     <div className="container">
-      <CreateFlashCard cardList={cardList} onAddCard={handleAddCard} />
-      <DisplayCardList cardList={cardList} onDeleteCard={handleDeleteCard} />
+      {editSelect ? (
+        <EditCard
+          cardList={cardList}
+          editSelect={editSelect}
+          onCancelEdit={handleCancelEdit}
+          onUpdateCard={handleUpdateCard}
+        />
+      ) : (
+        <CreateFlashCard cardList={cardList} onAddCard={handleAddCard} />
+      )}
+      <DisplayCardList
+        cardList={cardList}
+        onDeleteCard={handleDeleteCard}
+        onEditCard={handleSetEditTask}
+      />
     </div>
   );
 }
 
-function CreateFlashCard({ cardList, onAddCard }) {
+function CreateFlashCard({ onAddCard }) {
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
 
@@ -42,7 +68,7 @@ function CreateFlashCard({ cardList, onAddCard }) {
     e.preventDefault();
     if (answer === "" || question === "") return;
     const newCard = {
-      id: cardList.length + 1,
+      id: Date.now(),
       question,
       answer,
     };
@@ -51,11 +77,7 @@ function CreateFlashCard({ cardList, onAddCard }) {
     setAnswer("");
   }
   return (
-    <Form
-      formName="Create New Flash Card"
-      btnName="Add Flash Card"
-      onSubmit={handleSubmit}
-    >
+    <Form formName="Create New Flash Card" onSubmit={handleSubmit}>
       <label>Question:</label>
       <input
         value={question}
@@ -69,11 +91,72 @@ function CreateFlashCard({ cardList, onAddCard }) {
         type="text"
         onChange={(e) => setAnswer(e.target.value)}
       />
+      <button className="button btn-alone">Add Card</button>
     </Form>
   );
 }
 
-function DisplayCardList({ cardList, onDeleteCard }) {
+function EditCard({ cardList, editSelect, onCancelEdit, onUpdateCard }) {
+  const [editedQuestion, setEditedQuestion] = useState("");
+  const [editedAnswer, setEditedAnswer] = useState("");
+
+  useEffect(
+    function () {
+      setEditedQuestion(
+        cardList.find((card) => card.id === editSelect).question
+      );
+      setEditedAnswer(cardList.find((card) => card.id === editSelect).answer);
+    },
+    [cardList, editSelect]
+  );
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (editedQuestion === "" || editedAnswer === "") return;
+    const updatedTask = {
+      id: editSelect,
+      question: editedQuestion,
+      answer: editedAnswer,
+    };
+    onUpdateCard(updatedTask);
+
+    onCancelEdit();
+    setEditedQuestion("");
+    setEditedAnswer("");
+  }
+  return (
+    <Form onSubmit={handleSubmit} formName={`Edit card ${editSelect}`}>
+      {" "}
+      <label>Edit Question:</label>
+      <input
+        value={editedQuestion}
+        type="text"
+        onChange={(e) => setEditedQuestion(e.target.value)}
+      />
+      <br />
+      <label>Edit Answer:</label>
+      <input
+        value={editedAnswer}
+        type="text"
+        onChange={(e) => setEditedAnswer(e.target.value)}
+      />
+      <button type="submit" className="button btn-left">
+        Update Card
+      </button>
+      <button
+        className="button btn-right"
+        onClick={(e) => {
+          e.preventDefault();
+          onCancelEdit();
+        }}
+      >
+        Cancel
+      </button>
+    </Form>
+  );
+}
+
+function DisplayCardList({ cardList, onDeleteCard, onEditCard }) {
   const [selected, setSelected] = useState(null);
 
   function handleSelection(id) {
@@ -93,7 +176,11 @@ function DisplayCardList({ cardList, onDeleteCard }) {
               <>
                 <p className="card-answer">{card.answer}</p>
                 <div className="card-back-options">
-                  <Button addonClass="btn-card-delete" position="btn-left">
+                  <Button
+                    addonClass="btn-card-delete"
+                    position="btn-left"
+                    onClick={() => onEditCard(card.id)}
+                  >
                     Edit
                   </Button>
                   <Button

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Form from "./Form";
 import Button from "./Button";
 
@@ -18,36 +18,62 @@ const initialNotes = [
 
 export default function Notes() {
   const [notesList, setNotesList] = useState(initialNotes);
+  const [editSelect, setEditSelect] = useState(null);
 
   function handleAddNote(newNote) {
     setNotesList((currNotes) => [...currNotes, newNote]);
   }
   function handleDeleteNote(id) {
+    handleCancelNote();
     setNotesList((currNotes) => currNotes.filter((note) => note.id !== id));
+  }
+  function handleUpdateNote(updatedNote) {
+    setNotesList((currList) =>
+      currList.map((note) => (note.id === updatedNote.id ? updatedNote : note))
+    );
+  }
+  function handleSetEditNote(id) {
+    setEditSelect(id);
+  }
+  function handleCancelNote() {
+    setEditSelect(null);
   }
 
   return (
     <div className="container">
-      <CreateNote notesList={notesList} onAddNote={handleAddNote} />
-      <DisplayNotes notesList={notesList} onDeleteNote={handleDeleteNote} />
+      {editSelect ? (
+        <EditNote
+          notesList={notesList}
+          editSelect={editSelect}
+          onCancelEdit={handleCancelNote}
+          onUpdateNote={handleUpdateNote}
+        />
+      ) : (
+        <CreateNote onAddNote={handleAddNote} />
+      )}
+      <DisplayNotes
+        notesList={notesList}
+        onDeleteNote={handleDeleteNote}
+        onEditNote={handleSetEditNote}
+      />
     </div>
   );
 }
 
-function CreateNote({ notesList, onAddNote }) {
+function CreateNote({ onAddNote }) {
   const [heading, setHeading] = useState("");
   const [note, setNote] = useState("");
 
   function handleSubmit(e) {
     e.preventDefault();
     if (heading === "" || note === "") return;
-    const newNote = { id: notesList.length + 1, heading, note };
+    const newNote = { id: Date.now(), heading, note };
     onAddNote(newNote);
     setHeading("");
     setNote("");
   }
   return (
-    <Form formName="Add new note" btnName="Add note" onSubmit={handleSubmit}>
+    <Form formName="Add new note" onSubmit={handleSubmit}>
       <label>Note heading:</label>
       <input
         value={heading}
@@ -60,11 +86,73 @@ function CreateNote({ notesList, onAddNote }) {
         onChange={(e) => setNote(e.target.value)}
         type="text"
       />
+      <button className="button btn-alone">Add Note</button>
     </Form>
   );
 }
 
-function DisplayNotes({ notesList, onDeleteNote }) {
+function EditNote({ notesList, editSelect, onCancelEdit, onUpdateNote }) {
+  const [editedHeading, setEditedHeading] = useState("");
+  const [editedNote, setEditedNote] = useState("");
+
+  useEffect(
+    function () {
+      const heading = notesList.find((note) => note.id === editSelect).heading;
+      const note = notesList.find((note) => note.id === editSelect).note;
+
+      setEditedHeading(heading);
+      setEditedNote(note);
+    },
+    [notesList, editSelect]
+  );
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (editedHeading === "" || editedNote === "") return;
+    const updatedTask = {
+      id: editSelect,
+      heading: editedHeading,
+      note: editedNote,
+    };
+    onUpdateNote(updatedTask);
+
+    onCancelEdit();
+    setEditedHeading("");
+    setEditedNote("");
+  }
+  return (
+    <Form onSubmit={handleSubmit} formName={`Edit Note ${editSelect}`}>
+      {" "}
+      <label>Edit Heading:</label>
+      <input
+        value={editedHeading}
+        type="text"
+        onChange={(e) => setEditedHeading(e.target.value)}
+      />
+      <br />
+      <label>Edit Note:</label>
+      <input
+        value={editedNote}
+        type="text"
+        onChange={(e) => setEditedNote(e.target.value)}
+      />
+      <button type="submit" className="button btn-left">
+        Update Note
+      </button>
+      <button
+        className="button btn-right"
+        onClick={(e) => {
+          e.preventDefault();
+          onCancelEdit();
+        }}
+      >
+        Cancel
+      </button>
+    </Form>
+  );
+}
+
+function DisplayNotes({ notesList, onDeleteNote, onEditNote }) {
   return (
     <div className="subcontainer">
       <h3>Notes</h3>
@@ -78,7 +166,11 @@ function DisplayNotes({ notesList, onDeleteNote }) {
             </div>
 
             <div className="card-back-options">
-              <Button addonClass="btn-card-delete" position="btn-left">
+              <Button
+                addonClass="btn-card-delete"
+                position="btn-left"
+                onClick={() => onEditNote(note.id)}
+              >
                 Edit
               </Button>
               <Button

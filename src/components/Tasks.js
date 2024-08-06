@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "./Button";
 import Form from "./Form";
 
@@ -10,10 +10,13 @@ const initialTasks = [
 
 export default function Tasks() {
   const [taskList, setTaskList] = useState(initialTasks);
+  const [editSelect, setEditSelect] = useState(null);
+
   function handleSetTask(newTask) {
     setTaskList((curTasks) => [...curTasks, newTask]);
   }
   function handleDeleteTask(id) {
+    handleCancelEdit();
     setTaskList((currList) => currList.filter((task) => task.id !== id));
   }
   function handleCheckTask(id) {
@@ -23,31 +26,54 @@ export default function Tasks() {
       )
     );
   }
+  function handleUpdateTask(updatedTask) {
+    setTaskList((currList) =>
+      currList.map((task) => (task.id === updatedTask.id ? updatedTask : task))
+    );
+  }
+  function handleSetEditTask(id) {
+    setEditSelect(id);
+  }
+  function handleCancelEdit() {
+    setEditSelect(null);
+  }
+
   return (
     <div className="container">
-      <CreateTask onSetTask={handleSetTask} taskList={taskList} />
+      {editSelect ? (
+        <EditTask
+          key={editSelect}
+          editSelect={editSelect}
+          onCancelEdit={handleCancelEdit}
+          taskList={taskList}
+          onUpdateTask={handleUpdateTask}
+        />
+      ) : (
+        <CreateTask onSetTask={handleSetTask} taskList={taskList} />
+      )}
       <DisplayTaskList
         taskList={taskList}
         onDeleteTask={handleDeleteTask}
         onCheckTask={handleCheckTask}
+        onEditTask={handleSetEditTask}
       />
     </div>
   );
 }
 
-function CreateTask({ taskList, onSetTask }) {
+function CreateTask({ onSetTask }) {
   const [taskName, setTaskName] = useState("");
 
   function handleSubmit(e) {
     e.preventDefault();
     if (taskName === "") return;
-    const newTask = { id: taskList.length + 1, taskName };
+    const newTask = { id: Date.now(), taskName };
 
     onSetTask(newTask);
     setTaskName("");
   }
   return (
-    <Form btnName="Add Task" onSubmit={handleSubmit} formName="Create new task">
+    <Form onSubmit={handleSubmit} formName="Create new task">
       {" "}
       <label>Task name:</label>
       <input
@@ -55,11 +81,61 @@ function CreateTask({ taskList, onSetTask }) {
         value={taskName}
         onChange={(e) => setTaskName(e.target.value)}
       />
+      <button type="submit" className="button btn-alone">
+        Add Task
+      </button>
     </Form>
   );
 }
 
-function DisplayTaskList({ taskList, onDeleteTask, onCheckTask }) {
+function EditTask({ taskList, editSelect, onCancelEdit, onUpdateTask }) {
+  const [editedTask, setEditedTask] = useState("");
+
+  useEffect(
+    function () {
+      setEditedTask(taskList.find((task) => task.id === editSelect).taskName);
+    },
+    [taskList, editSelect]
+  );
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    if (editedTask === "") return;
+    const taskStatus = taskList.find(
+      (task) => task.id === editSelect
+    ).taskStatus;
+    const updatedTask = { id: editSelect, taskName: editedTask, taskStatus };
+    onUpdateTask(updatedTask);
+
+    onCancelEdit();
+    setEditedTask("");
+  }
+  return (
+    <Form onSubmit={handleSubmit} formName={`Edit task ${editSelect}`}>
+      {" "}
+      <label>Edit task name:</label>
+      <input
+        type="text"
+        value={editedTask}
+        onChange={(e) => setEditedTask(e.target.value)}
+      />
+      <button type="submit" className="button btn-left">
+        Update Task
+      </button>
+      <button
+        className="button btn-right"
+        onClick={(e) => {
+          e.preventDefault();
+          onCancelEdit();
+        }}
+      >
+        Cancel
+      </button>
+    </Form>
+  );
+}
+
+function DisplayTaskList({ taskList, onDeleteTask, onCheckTask, onEditTask }) {
   return (
     <div className="subcontainer">
       <h3>TASKS</h3>
@@ -80,7 +156,7 @@ function DisplayTaskList({ taskList, onDeleteTask, onCheckTask }) {
             </p>
             <Button
               addonClass="btn-small btn-left btn-task"
-              onClick={() => onDeleteTask(task.id)}
+              onClick={() => onEditTask(task.id)}
             >
               ↻
             </Button>
